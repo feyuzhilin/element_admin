@@ -1,39 +1,40 @@
-import Vue from 'vue'
-import Router from 'vue-router'
-// @表示的src的绝对路由
-import Home from '@/components/Home'
-import Login from '@/components/Login'
-Vue.use(Router)
-const router = new Router({
+import { createRouter, createWebHistory } from 'vue-router'
+import {initPermission} from './permission'
+const router = createRouter({
+  history: createWebHistory(),
   routes: [
-
     {
       path: '/',
-      redirect: '/login'
+      redirect: '/dashboard',
+    },
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: () => import(/* webpackChunkName: "dashboard" */ '../views/Index.vue'),
+      children: [
+        {
+          path: '/dashboard',
+          name: 'dashboard',
+          component: () => import(/* webpackChunkName: "dashboard" */ '../views/pages/dashboard.vue'),
+        },
+        {
+          path: '/component',
+          name: 'component',
+          component: () => import(/* webpackChunkName: "login" */ '../views/pages/Component.vue')
+        },
+        {
+          path: '/setting',
+          name: 'setting',
+          component: () => import(/* webpackChunkName: "login" */ '../views/pages/Setting.vue')
+        },
+      ]
     },
     {
       path: '/login',
-      component: Login
+      name: 'login',
+      component: () => import(/* webpackChunkName: "login" */ '../views/Login.vue')
     },
-    {
-      path: '/home',
-      component: Home
-    }
   ]
 })
-
-router.beforeEach((to, from, next) => {
-  console.log(from)
-  if (to.path === '/login') {
-    next()
-    return
-  }
-
-  let token = localStorage.getItem('token')
-  if (token) {
-    next()
-  } else {
-    next('/login')
-  }
-})
+initPermission(router)
 export default router
